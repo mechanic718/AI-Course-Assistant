@@ -31,7 +31,7 @@ def call_api(messages, max_tokens=500):
                 url,
                 headers=headers,
                 data=json.dumps(data, ensure_ascii=False).encode("utf-8"),
-                timeout=10,
+                timeout=60,
                 verify=False
             )
 
