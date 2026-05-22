@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+<meta charset="UTF-8">
+<title>AI课程助手</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Segoe UI",Arial,sans-serif;
+    background:#f1f5f9;
+    height:100vh;
+}
+
+/* ===== 整体布局 ===== */
+
+.container{
+    display:flex;
+    height:100vh;
+}
+
+/* ===== 左侧导航 ===== */
+
+.sidebar{
+    width:250px;
+    background:#1e293b;
+    color:white;
+    padding:25px;
+    overflow:auto;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.team{
+    color:#94a3b8;
+    margin-bottom:40px;
+}
+
+.menu-title{
+    color:#94a3b8;
+    margin-top:25px;
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.menu button{
+    width:100%;
+    text-align:left;
+    padding:12px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:10px;
+    background:#334155;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:15px;
+}
+
+.menu button:hover{
+    background:#4f46e5;
+}
+
+/* ===== 历史记录 ===== */
+
+.history{
+    margin-top:30px;
+}
+
+.history-item{
+    background:#334155;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+    font-size:14px;
+    color:#e2e8f0;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.history-item:hover{
+    background:#4f46e5;
+}
+
+/* ===== 右侧内容 ===== */
+
+.main{
+    flex:1;
+    padding:30px;
+    overflow:auto;
+}
+
+/* 顶部栏 */
+
+.topbar{
+    background:white;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom:25px;
+}
+
+.topbar h1{
+    color:#4338ca;
+    margin-bottom:8px;
+}
+
+.topbar p{
+    color:#64748b;
+}
+
+/* 卡片 */
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    margin-bottom:25px;
+}
+
+.card h2{
+    color:#1e293b;
+    margin-bottom:20px;
+}
+
+/* 按钮 */
+
+button{
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    background:#4f46e5;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    margin:5px;
+}
+
+button:hover{
+    background:#4338ca;
+    transform:translateY(-2px);
+}
+
+/* 输入框 */
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:1px solid #dbeafe;
+    border-radius:10px;
+    margin-top:10px;
+    margin-bottom:15px;
+    font-size:14px;
+    outline:none;
+}
+
+/* 回复区域 */
+
+#response,#report{
+    margin-top:20px;
+    background:#f8fafc;
+    padding:20px;
+    border-radius:15px;
+    line-height:1.8;
+}
+
+/* AI标题 */
+
+#response h4,
+#report h3{
+    color:#4338ca;
+    margin-bottom:8px;
+}
+
+/* 当前状态 */
+
+.status{
+    margin-top:15px;
+    color:#64748b;
+    font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- 左侧导航 -->
+    <div class="sidebar">
+
+        <div class="logo">AI课程助手</div>
+
+        <div class="team">
+            Learning Engine
+        </div>
+
+        <div class="menu">
+
+            <div class="menu-title">功能导航</div>
+
+            <button>AI智能问答</button>
+            <button>实验报告生成</button>
+            <button>学习记录</button>
+            <button>系统介绍</button>
+
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="history">
+
+            <div class="menu-title">
+                最近记录
+            </div>
+
+            <div id="historyList"></div>
+
+        </div>
+
+    </div>
+
+    <!-- 右侧内容 -->
+    <div class="main">
+
+        <!-- 顶部 -->
+        <div class="topbar">
+
+            <h1>智能学习平台</h1>
+
+            <p>
+                基于大模型API的多学科AI课程助手系统
+            </p>
+
+        </div>
+
+        <!-- AI问答 -->
+        <div class="card">
+
+            <h2>AI智能问答</h2>
+
+            <!-- 学科 -->
+            <button onclick="setSubject('计算机')">计算机</button>
+            <button onclick="setSubject('化学')">化学</button>
+            <button onclick="setSubject('政治')">政治</button>
+
+            <br><br>
+
+            <!-- 模式 -->
+            <button onclick="setMode('学习')">学习模式</button>
+            <button onclick="setMode('出题')">出题模式</button>
+            <button onclick="setMode('代码')">代码模式</button>
+
+            <div class="status">
+                当前学科：
+                <span id="subjectText">计算机</span>
+                ｜ 当前模式：
+                <span id="modeText">学习</span>
+            </div>
+
+            <input id="input" placeholder="请输入你的问题">
+
+            <button onclick="send()">发送问题</button>
+
+            <div id="response"></div>
+
+        </div>
+
+        <!-- 报告生成 -->
+        <div class="card">
+
+            <h2>实验报告生成</h2>
+
+            <select id="report_subject">
+
+                <option value="化学">化学</option>
+                <option value="计算机">计算机</option>
+                <option value="政治">政治</option>
+
+            </select>
+
+            <input id="topic" placeholder="请输入实验题目">
+
+            <button onclick="generateReport()">
+                生成实验报告
+            </button>
+
+            <div id="report"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+let currentSubject = "计算机";
+let currentMode = "学习";
+
+// ===== 保存历史记录 =====
+
+function saveHistory(question){
+
+    let history =
+    JSON.parse(localStorage.getItem("ai_history")) || [];
+
+    // 防止重复
+    if(history.includes(question)){
+        return;
+    }
+
+    // 新记录放最前面
+    history.unshift(question);
+
+    // 最多保存10条
+    if(history.length > 10){
+        history.pop();
+    }
+
+    localStorage.setItem(
+        "ai_history",
+        JSON.stringify(history)
+    );
+
+    loadHistory();
+
+}
+
+// ===== 加载历史记录 =====
+
+function loadHistory(){
+
+    let history =
+    JSON.parse(localStorage.getItem("ai_history")) || [];
+
+    let html = "";
+
+    history.forEach(item => {
+
+        html += `
+            <div class="history-item"
+                 onclick="useHistory('${item}')">
+                 ${item}
+            </div>
+        `;
+
+    });
+
+    document.getElementById("historyList").innerHTML =
+    html;
+
+}
+
+// ===== 点击历史记录 =====
+
+function useHistory(text){
+
+    document.getElementById("input").value = text;
+
+}
+
+// ===== 学科 =====
+
+function setSubject(s){
+
+    currentSubject=s;
+
+    document.getElementById("subjectText").innerText=s;
+
+}
+
+// ===== 模式 =====
+
+function setMode(m){
+
+    currentMode=m;
+
+    document.getElementById("modeText").innerText=m;
+
+}
+
+// ===== 聊天 =====
+
+async function send(){
+
+    let msg=document.getElementById("input").value;
+
+    if(!msg){
+
+        alert("请输入内容");
+
+        return;
+
+    }
+
+    // 保存历史记录
+    saveHistory(msg);
+
+    document.getElementById("response").innerHTML=
+    "AI正在思考中...";
+
+    try{
+
+        let res=await fetch(
+            "http://127.0.0.1:5000/chat",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    message:msg,
+                    subject:currentSubject,
+                    mode:currentMode
+
+                })
+            }
+        );
+
+        let data=await res.json();
+
+        if(!data.reply){
+
+            document.getElementById("response").innerHTML=
+            "返回数据异常";
+
+            return;
+
+        }
+
+        let parts=data.reply.split("【");
+
+        let html="";
+
+        parts.forEach(p=>{
+
+            if(p.includes("】")){
+
+                let s=p.split("】");
+
+                html += `
+                    <h4>${s[0]}</h4>
+                    <p>${s[1] || ""}</p>
+                `;
+
+            }
+
+        });
+
+        document.getElementById("response").innerHTML=
+        html || data.reply;
+
+    }catch(err){
+
+        document.getElementById("response").innerHTML=
+        "请求失败，请检查后端或网络";
+
+    }
+
+}
+
+// ===== 报告 =====
+
+async function generateReport(){
+
+    let topic=document.getElementById("topic").value;
+
+    let subject=
+    document.getElementById("report_subject").value;
+
+    if(!topic){
+
+        alert("请输入题目");
+
+        return;
+
+    }
+
+    document.getElementById("report").innerHTML=
+    "正在生成报告...";
+
+    try{
+
+        let res=await fetch(
+            "http://127.0.0.1:5000/report",
+            {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    topic:topic,
+                    subject:subject
+
+                })
+
+            }
+        );
+
+        let data=await res.json();
+
+        if(!data.report){
+
+            document.getElementById("report").innerHTML=
+            "返回数据异常";
+
+            return;
+
+        }
+
+        let parts=data.report.split("【");
+
+        let html="";
+
+        parts.forEach(p=>{
+
+            if(p.includes("】")){
+
+                let s=p.split("】");
+
+                html += `
+                    <h3>${s[0]}</h3>
+                    <p>${s[1] || ""}</p>
+                `;
+
+            }
+
+        });
+
+        document.getElementById("report").innerHTML=
+        html || data.report;
+
+    }catch(err){
+
+        document.getElementById("report").innerHTML=
+        "请求失败，请检查后端或网络";
+
+    }
+
+}
+
+// 页面加载时读取历史记录
+loadHistory();
+
+</script>
+
+</body>
+</html>
