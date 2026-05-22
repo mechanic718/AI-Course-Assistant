@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI课程助手</title>
+
+<style>
+body {font-family: Arial; background:#f5f5f5;}
+#box {width:600px; margin:auto; background:white; padding:20px; border-radius:10px;}
+button {margin:5px;}
+</style>
+</head>
+
+<body>
+
+<div id="box">
+
+<h2>AI课程助手</h2>
+
+<!-- 学科 -->
+<button onclick="setSubject('计算机')">计算机</button>
+<button onclick="setSubject('化学')">化学</button>
+<button onclick="setSubject('政治')">政治</button>
+
+<!-- 模式 -->
+<button onclick="setMode('学习')">学习</button>
+<button onclick="setMode('出题')">出题</button>
+<button onclick="setMode('代码')">代码</button>
+
+<br><br>
+
+<input id="input" placeholder="输入问题">
+<button onclick="send()">发送</button>
+
+<div id="response"></div>
+
+<hr>
+
+<h3>实验报告</h3>
+
+<select id="report_subject">
+<option value="化学">化学</option>
+<option value="计算机">计算机</option>
+<option value="政治">政治</option>
+</select>
+
+<input id="topic" placeholder="实验题目">
+<button onclick="generateReport()">生成</button>
+
+<div id="report"></div>
+
+</div>
+
+<script>
+let currentSubject = "计算机";
+let currentMode = "学习";
+
+function setSubject(s){currentSubject=s;}
+function setMode(m){currentMode=m;}
+
+// ===== 聊天 =====
+async function send(){
+    let msg=document.getElementById("input").value;
+
+    if(!msg){
+        alert("请输入内容");
+        return;
+    }
+
+    document.getElementById("response").innerHTML="正在生成中...";
+
+    try{
+        let res=await fetch("http://127.0.0.1:5000/chat",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({message:msg,subject:currentSubject,mode:currentMode})
+        });
+
+        let data=await res.json();
+
+        if(!data.reply){
+            document.getElementById("response").innerHTML="返回数据异常";
+            return;
+        }
+
+        let parts=data.reply.split("【");
+        let html="";
+
+        parts.forEach(p=>{
+            if(p.includes("】")){
+                let s=p.split("】");
+                html+=`<h4>${s[0]}</h4><p>${s[1] || ""}</p>`;
+            }
+        });
+
+        document.getElementById("response").innerHTML=html || data.reply;
+
+    }catch(err){
+        document.getElementById("response").innerHTML="请求失败，请检查后端或网络";
+    }
+}
+
+// ===== 报告 =====
+async function generateReport(){
+    let topic=document.getElementById("topic").value;
+    let subject=document.getElementById("report_subject").value;
+
+    if(!topic){
+        alert("请输入题目");
+        return;
+    }
+
+    document.getElementById("report").innerHTML="正在生成报告...";
+
+    try{
+        let res=await fetch("http://127.0.0.1:5000/report",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({topic:topic,subject:subject})
+        });
+
+        let data=await res.json();
+
+        if(!data.report){
+            document.getElementById("report").innerHTML="返回数据异常";
+            return;
+        }
+
+        let parts=data.report.split("【");
+        let html="";
+
+        parts.forEach(p=>{
+            if(p.includes("】")){
+                let s=p.split("】");
+                html+=`<h3>${s[0]}</h3><p>${s[1] || ""}</p>`;
+            }
+        });
+
+        document.getElementById("report").innerHTML=html || data.report;
+
+    }catch(err){
+        document.getElementById("report").innerHTML="请求失败，请检查后端或网络";
+    }
+}
+</script>
+
+</body>
+</html>
